@@ -12,10 +12,9 @@ DetectHiddenWindows true
 ; Keys are posted straight into that console, so the focus never leaves
 ; the window you are dictating into.
 ;
-; Not meant to be run by hand: dictate-start.ahk starts it with arguments,
+; Not meant to be run by hand: dictate-start.ahk starts it with one argument,
 ;   dictate-core.ahk default        Claude Code with its default config (~/.claude)
 ;   dictate-core.ahk <configDir>    Claude Code with CLAUDE_CONFIG_DIR=<configDir>
-;   ... firstrun                    optional 2nd argument: console visible this time
 ;
 ;   Ctrl+Space   1st press: start recording
 ;                2nd press: stop, paste the text into the window that
@@ -31,7 +30,7 @@ global StateIni    := A_ScriptDir "\dictate.ini"
 global ClaudeExe         := Cfg("claudeExe", "")            ; "" = look up claude.exe in PATH
 global HotkeyToggle      := Cfg("hotkey", "^Space")         ; start / stop and paste
 global HotkeyCancel      := Cfg("cancelKey", "Escape")      ; abort, only while recording
-global WindowMode        := Cfg("windowMode", "minimized")  ; hidden | minimized | visible
+global WindowMode        := Cfg("windowMode", "visible")    ; hidden | minimized | visible
 global IndicatorXPercent := Cfg("indicatorXPercent", 90)
 global IndicatorYPercent := Cfg("indicatorYPercent", 90)
 global IndicatorOpacity  := Cfg("indicatorOpacity", 170)
@@ -49,10 +48,6 @@ if (A_Args.Length < 1) {
     ExitApp
 }
 global ConfigDir   := (A_Args[1] = "default") ? "" : A_Args[1]
-; Second argument "firstrun" (from the launcher, when it has just created
-; dictate.ini): keep the console visible this time, Claude Code will ask things.
-if (A_Args.Length >= 2 && A_Args[2] = "firstrun")
-    WindowMode := "visible"
 global Settings    := A_ScriptDir "\dictate-settings.json"
 global OutFile     := A_ScriptDir "\dictate-out.txt"
 global LogFile     := A_ScriptDir "\dictate.log"      ; shared with the hook
@@ -136,9 +131,9 @@ CreateTrayMenu() {
         A_TrayMenu.Add("Profile: " name, ((d, *) => SwitchProfile(d)).Bind(dir))
     A_TrayMenu.Check("Profile: " ProfileName())
     A_TrayMenu.Add()
-    A_TrayMenu.Add("Claude window: visible",   (*) => ApplyWindowMode("visible"))
-    A_TrayMenu.Add("Claude window: minimized", (*) => ApplyWindowMode("minimized"))
-    A_TrayMenu.Add("Claude window: hidden",    (*) => ApplyWindowMode("hidden"))
+    A_TrayMenu.Add("Claude window: visible",   (*) => ChooseWindowMode("visible"))
+    A_TrayMenu.Add("Claude window: minimized", (*) => ChooseWindowMode("minimized"))
+    A_TrayMenu.Add("Claude window: hidden",    (*) => ChooseWindowMode("hidden"))
     A_TrayMenu.Add()
     A_TrayMenu.Add("Autostart", (*) => ToggleAutostart())   ; shortcut in the Startup folder
     A_TrayMenu.Add()
@@ -222,6 +217,13 @@ MarkWindowMode() {
         else
             A_TrayMenu.Uncheck(item)
     }
+}
+
+; Menu choice: apply and remember in dictate.ini for the next starts.
+ChooseWindowMode(mode) {
+    ApplyWindowMode(mode)
+    IniWrite mode, StateIni, "settings", "windowMode"
+    LogEvent("window mode set to " mode)
 }
 
 ; Puts the Claude Code console into the given state and remembers it.

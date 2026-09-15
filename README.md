@@ -27,8 +27,8 @@ A small AutoHotkey utility, no build, no dependencies.
    unless you have several accounts. Then a console with Claude Code opens, a small
    `○ ready` indicator appears in a screen corner, a green "H" icon in the tray.
 3. The first time, Claude Code asks in that console whether to trust this folder:
-   answer Yes. It will not ask again. From the second start on, the console opens
-   minimized (see `windowMode` in `dictate.ini`).
+   answer Yes. It will not ask again. Once you are comfortable, pick `Claude window:
+   minimized` or `hidden` in the tray menu; the choice is remembered.
 
 Exit: right-click the indicator or the tray icon, `Exit`. The Claude Code console
 closes together with the script.

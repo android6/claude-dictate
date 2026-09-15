@@ -20,10 +20,8 @@ Ini      := A_ScriptDir "\dictate.ini"
 Dictate  := A_ScriptDir "\dictate-core.ahk"
 FirstRun := !FileExist(Ini)
 
-; On the first run the core keeps the Claude Code console visible, because
-; Claude Code asks about trusting the folder (and maybe about logging in).
 StartCore(configDir) {
-    Run '"' A_AhkPath '" "' Dictate '" "' configDir '"' (FirstRun ? " firstrun" : "")
+    Run '"' A_AhkPath '" "' Dictate '" "' configDir '"'
     ExitApp
 }
 
