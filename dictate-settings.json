@@ -1,0 +1,19 @@
+{
+  "language": "ru",
+  "voice": {
+    "enabled": true,
+    "mode": "tap"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File hook-grab.ps1"
+          }
+        ]
+      }
+    ]
+  }
+}

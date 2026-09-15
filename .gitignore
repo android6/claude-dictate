@@ -1,0 +1,7 @@
+# local settings and state (copy dictate.example.ini to dictate.ini)
+dictate.ini
+dictate.log
+dictate-out.txt
+dictate-out.tmp
+# working draft, not part of the project
+START-PROMPT.md
