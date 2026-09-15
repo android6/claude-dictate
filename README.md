@@ -22,10 +22,11 @@ A small AutoHotkey utility, no build, no dependencies.
 ## Getting started
 
 1. Copy the folder anywhere.
-2. Double-click `dictate-start.ahk`. A minimized console with Claude Code opens, a small
+2. Double-click `dictate-start.ahk`. A console with Claude Code opens, a small
    `○ ready` indicator appears in a screen corner, a green "H" icon in the tray.
-3. The first time, Claude Code asks whether to trust this folder. Restore the console
-   from the taskbar and answer Yes. It will not ask again.
+3. The first time, Claude Code asks in that console whether to trust this folder:
+   answer Yes. It will not ask again. From the second start on, the console opens
+   minimized (see `windowMode` in `dictate.ini`).
 
 Exit: right-click the indicator or the tray icon, `Exit`. The Claude Code console
 closes together with the script.

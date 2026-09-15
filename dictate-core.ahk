@@ -12,9 +12,10 @@ DetectHiddenWindows true
 ; Keys are posted straight into that console, so the focus never leaves
 ; the window you are dictating into.
 ;
-; Not meant to be run by hand: dictate-start.ahk starts it with one argument,
+; Not meant to be run by hand: dictate-start.ahk starts it with arguments,
 ;   dictate-core.ahk default        Claude Code with its default config (~/.claude)
 ;   dictate-core.ahk <configDir>    Claude Code with CLAUDE_CONFIG_DIR=<configDir>
+;   ... firstrun                    optional 2nd argument: console visible this time
 ;
 ;   Ctrl+Space   1st press: start recording
 ;                2nd press: stop, paste the text into the window that
@@ -48,6 +49,10 @@ if (A_Args.Length < 1) {
     ExitApp
 }
 global ConfigDir   := (A_Args[1] = "default") ? "" : A_Args[1]
+; Second argument "firstrun" (from the launcher, when it has just created
+; dictate.ini): keep the console visible this time, Claude Code will ask things.
+if (A_Args.Length >= 2 && A_Args[2] = "firstrun")
+    WindowMode := "visible"
 global Settings    := A_ScriptDir "\dictate-settings.json"
 global OutFile     := A_ScriptDir "\dictate-out.txt"
 global LogFile     := A_ScriptDir "\dictate.log"      ; shared with the hook

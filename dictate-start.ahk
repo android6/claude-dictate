@@ -12,16 +12,22 @@
 ; ------------------------------------------------------------------
 
 Ini         := A_ScriptDir "\dictate.ini"
-if !FileExist(Ini)                       ; first run: start from the example
+FirstRun    := !FileExist(Ini)
+if FirstRun                              ; first run: start from the example
     FileCopy A_ScriptDir "\dictate.example.ini", Ini
 ProfilesDir := IniRead(Ini, "profiles", "dir", "")
 Dictate     := A_ScriptDir "\dictate-core.ahk"
 
-; No profiles configured: plain Claude Code with its default config.
-if (ProfilesDir = "") {
-    Run '"' A_AhkPath '" "' Dictate '" default'
+; On the first run the core keeps the Claude Code console visible, because
+; Claude Code asks about trusting the folder (and maybe about logging in).
+StartCore(configDir) {
+    Run '"' A_AhkPath '" "' Dictate '" "' configDir '"' (FirstRun ? " firstrun" : "")
     ExitApp
 }
+
+; No profiles configured: plain Claude Code with its default config.
+if (ProfilesDir = "")
+    StartCore("default")
 if !DirExist(ProfilesDir) {
     MsgBox "[profiles] dir in dictate.ini does not exist: " ProfilesDir, "claude-dictate", "Iconx"
     ExitApp
@@ -30,10 +36,8 @@ if !DirExist(ProfilesDir) {
 ; Optional argument: a config dir, or "default", chosen from the core's tray menu.
 configDir := ""
 if (A_Args.Length >= 1) {
-    if (A_Args[1] = "default") {
-        Run '"' A_AhkPath '" "' Dictate '" default'
-        ExitApp
-    }
+    if (A_Args[1] = "default")
+        StartCore("default")
     configDir := A_Args[1]
 }
 
@@ -60,4 +64,4 @@ if !DirExist(configDir) {
 }
 
 IniWrite configDir, Ini, "profiles", "last"
-Run '"' A_AhkPath '" "' Dictate '" "' configDir '"'
+StartCore(configDir)
