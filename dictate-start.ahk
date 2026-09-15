@@ -13,8 +13,13 @@
 
 Ini         := A_ScriptDir "\dictate.ini"
 FirstRun    := !FileExist(Ini)
-if FirstRun                              ; first run: start from the example
+if FirstRun {                            ; first run: start from the example
     FileCopy A_ScriptDir "\dictate.example.ini", Ini
+    ; Ask once where the Claude profiles live; Cancel = one account, default config.
+    dir := DirSelect("*" A_MyDocuments "\..", 2, "claude-dictate: folder with your Claude profiles (one subfolder per account).`nCancel if you use a single account.")
+    if (dir != "")
+        IniWrite dir, Ini, "profiles", "dir"
+}
 ProfilesDir := IniRead(Ini, "profiles", "dir", "")
 Dictate     := A_ScriptDir "\dictate-core.ahk"
 
