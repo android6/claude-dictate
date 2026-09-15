@@ -26,25 +26,23 @@ StartCore(configDir) {
 }
 
 if FirstRun {
-    FileCopy A_ScriptDir "\dictate.example.ini", Ini
     ; The tree opens with Claude Code's own ~\.claude preselected: OK on it = the
     ; default profile, OK on another profile folder = that one, Cancel = do not start
-    ; (the question comes back next time).
+    ; (nothing is created, the question comes back next time).
     defaultDir := EnvGet("USERPROFILE") "\.claude"
     chosen := DirSelect("*" defaultDir, 2,
-        "claude-dictate: select the Claude profile folder to dictate with.`n"
-        . "The preselected .claude is the default profile. Can be changed later in the tray menu.")
-    if (chosen = "") {
-        FileDelete Ini
+        "Select the Claude profile folder.`n"
+        . "Preselected .claude = default profile.`n"
+        . "Can be changed later in the tray menu.")
+    if (chosen = "")
+        ExitApp
+    if (chosen != defaultDir && !FileExist(chosen "\.credentials.json")) {
+        MsgBox "This is not a Claude profile folder (no .credentials.json):`n" chosen "`n`nRun dictate-start.ahk again and pick a profile folder.", "claude-dictate", "Iconx"
         ExitApp
     }
+    FileCopy A_ScriptDir "\dictate.example.ini", Ini
     if (chosen = defaultDir)
         StartCore("default")
-    if !FileExist(chosen "\.credentials.json") {
-        MsgBox "This is not a Claude profile folder (no .credentials.json):`n" chosen "`n`nRun dictate-start.ahk again and pick a profile folder.", "claude-dictate", "Iconx"
-        FileDelete Ini
-        ExitApp
-    }
     SplitPath chosen, , &parent
     IniWrite parent, Ini, "profiles", "dir"
     IniWrite chosen, Ini, "profiles", "last"
