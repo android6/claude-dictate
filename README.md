@@ -2,9 +2,13 @@
 
 English · [Русский](README.ru.md)
 
-System-wide voice dictation for Windows, powered by Claude Code's speech recognition.
-Press Ctrl+Space in any application, speak, press again, and the text is pasted where
-the cursor was. Claude Code only acts as a "dictaphone": a hook intercepts the dictated
+A classic voice-typing app for Windows, like the system-wide dictation hotkey in the
+ChatGPT desktop app, but built on the speech recognition inside Claude Code. Claude Code
+has `/voice` dictation, yet only for its own prompt: there is no global hotkey that types
+into any window. This utility closes that gap. Press Ctrl+Space in any application,
+speak, press again, and the text is pasted where the cursor was.
+
+Under the hood Claude Code only acts as a "dictaphone": a hook intercepts the dictated
 text, the model never sees it, no tokens are spent. Transcription itself is free and
 does not count toward subscription limits.
 
