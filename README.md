@@ -59,6 +59,7 @@ console window mode (hidden, minimized, visible), `Autostart` (check mark = shor
 | Indicator | Meaning |
 |---|---|
 | `○ ready` | ready |
+| `↻ updated` (yellow) | ready; Claude Code updated itself in the background, the old version keeps running until `Reload` |
 | `● REC 1:53` | recording, countdown to two minutes, last 10 seconds in red |
 | `… process` | recording stopped, waiting for the text |
 | `✓ pasted` | pasted |
@@ -120,7 +121,12 @@ On every start the launcher takes the first that applies:
 4. The script waits for the file, pastes the text via the clipboard and restores the old clipboard.
 5. The real microphone state is read from the Windows registry
    (`CapabilityAccessManager\ConsentStore\microphone`); otherwise an empty recording
-   cannot be told apart from a running one.
+   cannot be told apart from a running one. The record is keyed by the executable path,
+   and Claude Code's auto-update renames the running binary to `claude.exe.old.<n>`
+   without a word, so the path is asked from the running process each time
+   (`QueryFullProcessImageName`) rather than taken from the settings. When that path
+   stops matching the one seen at start, the script knows Claude Code has updated and
+   turns the indicator yellow.
 
 ## Limitations
 

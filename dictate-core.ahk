@@ -55,6 +55,9 @@ global DictHwnd    := 0        ; window handle of the Claude Code console
 global Recording   := false
 global RecStartTick := 0       ; A_TickCount when the current recording started
 global MicSeen     := false    ; the microphone was observed in use during this recording
+global ClaudePid   := 0        ; process id of claude.exe inside that console
+global ClaudeStartPath := ""   ; path of that binary when the window was started
+global ClaudeUpdated := false  ; Claude Code replaced its binary while running; Reload pending
 global TargetHwnd  := 0
 global Indicator   := 0        ; Gui of the status indicator
 global IndText     := 0        ; its text control
@@ -325,8 +328,13 @@ SetIndicator(text, color, resetMs := 0) {
         SetTimer IndicatorIdle, 0
 }
 
+; Idle. Yellow "↻ updated" after Claude Code updated itself: purely a hint,
+; dictation keeps working, but the old version runs until a Reload (tray / indicator menu).
 IndicatorIdle() {
-    SetIndicator("○ ready", "A0A0A0")
+    if ClaudeUpdated
+        SetIndicator("↻ updated", "E0B050")
+    else
+        SetIndicator("○ ready", "A0A0A0")
 }
 
 ; Recording countdown: "● REC 1:53" from RecLimitSec down to zero, updated every
@@ -347,14 +355,54 @@ StopRecClock() {
 ; Is Claude Code recording right now? Windows keeps a per-app microphone usage
 ; record in the registry (the same data drives the tray microphone icon):
 ; LastUsedTimeStop = 0 means the app is using the microphone at this moment.
+; The record is keyed by the current path of the running binary, so that path
+; is asked from the process itself (see ClaudeImagePath), not taken from claudeExe.
 ; The value is a 64-bit FILETIME, which RegRead cannot read, hence RegGetValue.
 MicInUse() {
-    sub := "Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone\NonPackaged\" StrReplace(ClaudeExe, "\", "#")
+    path := ClaudeImagePath()
+    if (path = "")
+        return false
+    sub := "Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone\NonPackaged\" StrReplace(path, "\", "#")
     val := 0
     size := 8
     rc := DllCall("advapi32\RegGetValueW", "ptr", 0x80000001, "str", sub, "str", "LastUsedTimeStop"
         , "uint", 0x40, "ptr", 0, "int64*", &val, "uint*", &size, "int")   ; HKCU, RRF_RT_REG_QWORD
     return (rc = 0 && val = 0)
+}
+
+; Full path of the executable behind the running Claude Code process, as the
+; kernel sees it now. Claude Code's auto-update renames the running binary
+; (claude.exe -> claude.exe.old.<n>) and puts the new one in its place; the
+; process keeps running under the new name and Windows files its microphone
+; use under that name. WMI / Get-Process still report the original path,
+; QueryFullProcessImageName reports the current one. "" if the process is gone.
+ClaudeImagePath() {
+    if !ClaudePid
+        return ""
+    h := DllCall("OpenProcess", "uint", 0x1000, "int", 0, "uint", ClaudePid, "ptr")   ; PROCESS_QUERY_LIMITED_INFORMATION
+    if !h
+        return ""
+    buf := Buffer(1024 * 2)
+    size := 1024
+    ok := DllCall("QueryFullProcessImageNameW", "ptr", h, "uint", 0, "ptr", buf, "uint*", &size)
+    DllCall("CloseHandle", "ptr", h)
+    return ok ? StrGet(buf, size, "UTF-16") : ""
+}
+
+; Claude Code updates itself in the background and says nothing about it: the
+; old version keeps running under a new file name. Once the running path stops
+; matching the one seen at start, the idle indicator turns yellow until a Reload.
+; Checked once a minute; stops itself after the first hit.
+CheckClaudeUpdate() {
+    global ClaudeUpdated
+    path := ClaudeImagePath()
+    if (path = "" || ClaudeStartPath = "" || path = ClaudeStartPath)
+        return
+    ClaudeUpdated := true
+    SetTimer CheckClaudeUpdate, 0
+    LogEvent("Claude Code updated itself: running binary is now " path ", Reload to start the new version")
+    if !Recording
+        IndicatorIdle()
 }
 
 RecTick() {
@@ -401,7 +449,7 @@ RecTick() {
 ; conhost accepts posted keys whether the window is visible, minimized or hidden;
 ; Windows Terminal does not, which is why it is not used here.
 StartClaudeWindow() {
-    global DictHwnd
+    global DictHwnd, ClaudePid, ClaudeStartPath, ClaudeUpdated
     if (ConfigDir != "")
         EnvSet "CLAUDE_CONFIG_DIR", ConfigDir
     ; /voice needs a claude.ai login; make sure no API key overrides it.
@@ -433,7 +481,16 @@ StartClaudeWindow() {
 
     Sleep 5000   ; let Claude Code draw its prompt
     ApplyWindowMode(WindowMode)
-    LogEvent("Claude Code started, console hwnd " DictHwnd ", config " (ConfigDir != "" ? ConfigDir : "default") ", window " WindowMode)
+    ; A console window reports the pid of the hosted program (claude.exe), not
+    ; of conhost. That pid is what MicInUse and the update check work from.
+    ; The window may already be gone if Claude Code crashed on startup.
+    try ClaudePid := WinGetPID("ahk_id " DictHwnd)
+    catch
+        ClaudePid := 0
+    ClaudeStartPath := ClaudeImagePath()
+    ClaudeUpdated := false
+    SetTimer CheckClaudeUpdate, 60000
+    LogEvent("Claude Code started, console hwnd " DictHwnd ", pid " ClaudePid " (" ClaudeStartPath "), config " (ConfigDir != "" ? ConfigDir : "default") ", window " WindowMode)
     return true
 }
 
