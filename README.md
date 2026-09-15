@@ -22,10 +22,10 @@ A small AutoHotkey utility, no build, no dependencies.
 ## Getting started
 
 1. Copy the folder anywhere.
-2. Double-click `dictate-start.ahk`. On the first run it asks for the folder of the Claude
-   profile to dictate with; press Cancel to use the default one. Then a console with
-   Claude Code opens, a small `○ ready` indicator appears in a screen corner, a green
-   "H" icon in the tray.
+2. Double-click `dictate-start.ahk`. On the first run a folder dialog asks which Claude
+   profile to dictate with; the default `~\.claude` is preselected, so just press OK
+   unless you have several accounts. Then a console with Claude Code opens, a small
+   `○ ready` indicator appears in a screen corner, a green "H" icon in the tray.
 3. The first time, Claude Code asks in that console whether to trust this folder:
    answer Yes. It will not ask again. From the second start on, the console opens
    minimized (see `windowMode` in `dictate.ini`).
@@ -86,9 +86,10 @@ Recognition language: `dictate-settings.json`, key `language` (default `ru`; see
 A profile is a Claude Code config directory (`CLAUDE_CONFIG_DIR`) with its own login,
 recognizable by a `.credentials.json` inside. `default` is Claude Code's own `~\.claude`.
 
-**One account, the usual case.** Press Cancel in the first-run dialog. The launcher starts
-the core with `default`, the core leaves `CLAUDE_CONFIG_DIR` alone, Claude Code uses
-`~\.claude`. The menu shows `Profile: default`.
+**One account, the usual case.** Press OK on the preselected `~\.claude` in the first-run
+dialog. The launcher starts the core with `default`, the core leaves `CLAUDE_CONFIG_DIR`
+alone, Claude Code uses `~\.claude`. The menu shows `Profile: default`. Cancel in that
+dialog means "do not start"; the question comes back next time.
 
 **Several accounts.** Pick the profile folder in the first-run dialog. It becomes `last`
 in `dictate.ini`, its parent folder becomes `dir`, and every sibling folder with a
