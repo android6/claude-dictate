@@ -123,3 +123,7 @@ Claude Code берёт `~\.claude`. В меню пункт `Profile: default`. C
 - Только Windows. На macOS схема с хуком повторяется, но вместо AutoHotkey нужен
   Hammerspoon и tmux вместо посылки клавиш в окно.
 - Не более двух минут за одну запись, это лимит Claude Code.
+
+## Лицензия
+
+MIT. Проект не связан с Anthropic и не одобрен ею; Claude является товарным знаком Anthropic, PBC.

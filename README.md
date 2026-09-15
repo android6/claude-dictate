@@ -124,3 +124,7 @@ On every start the launcher takes the first that applies:
 - Windows only. On macOS the hook scheme works the same, but AutoHotkey has to be replaced
   by Hammerspoon and posting keys to a window by tmux.
 - At most two minutes per recording, a Claude Code limit.
+
+## License
+
+MIT. Not affiliated with or endorsed by Anthropic; Claude is a trademark of Anthropic, PBC.
