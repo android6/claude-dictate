@@ -18,8 +18,9 @@ A small AutoHotkey utility, no build, no dependencies.
 
 - Windows 10/11.
 - [AutoHotkey v2](https://www.autohotkey.com/).
-- [Claude Code](https://code.claude.com/) 2.1.116 or newer (tap-mode dictation),
-  `claude.exe` in PATH. Signed in with a claude.ai account on a Pro/Max/Team/Enterprise
+- [Claude Code](https://code.claude.com/) 2.1.116 or newer (tap-mode dictation). The
+  standard installer puts `claude.exe` in PATH, which is enough; otherwise set `claudeExe`
+  in `dictate.ini`. Signed in with a claude.ai account on a Pro/Max/Team/Enterprise
   plan; dictation is not available with an API key.
 - A microphone that desktop apps are allowed to use (Windows privacy settings).
 

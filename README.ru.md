@@ -18,9 +18,10 @@
 
 - Windows 10/11.
 - [AutoHotkey v2](https://www.autohotkey.com/).
-- [Claude Code](https://code.claude.com/) 2.1.116 или новее (нужен tap-режим диктовки),
-  `claude.exe` в PATH. Вход через аккаунт claude.ai с подпиской Pro/Max/Team/Enterprise,
-  с API-ключом диктовка не работает.
+- [Claude Code](https://code.claude.com/) 2.1.116 или новее (нужен tap-режим диктовки).
+  Штатный установщик кладёт `claude.exe` в PATH, этого достаточно; иначе укажи путь
+  в `claudeExe` в `dictate.ini`. Вход через аккаунт claude.ai с подпиской
+  Pro/Max/Team/Enterprise, с API-ключом диктовка не работает.
 - Микрофон, разрешённый для классических приложений в настройках Windows.
 
 ## Запуск
