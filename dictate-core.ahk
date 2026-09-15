@@ -28,6 +28,8 @@ DetectHiddenWindows true
 ; The values below are only the defaults used when a key is missing.
 global StateIni    := A_ScriptDir "\dictate.ini"
 global ClaudeExe         := Cfg("claudeExe", "")            ; "" = look up claude.exe in PATH
+global HotkeyToggle      := Cfg("hotkey", "^Space")         ; start / stop and paste
+global HotkeyCancel      := Cfg("cancelKey", "Escape")      ; abort, only while recording
 global WindowMode        := Cfg("windowMode", "minimized")  ; hidden | minimized | visible
 global IndicatorXPercent := Cfg("indicatorXPercent", 90)
 global IndicatorYPercent := Cfg("indicatorYPercent", 90)
@@ -105,13 +107,18 @@ if !StartClaudeWindow() {
 Ready := true
 IndicatorIdle()
 
-^Space:: ToggleDictation()
-
-; Escape is intercepted only while a recording is running (Recording = true).
-; Outside of that window the hotkey does not exist and Escape reaches the app as usual.
-#HotIf Recording
-Escape:: CancelDictation()
-#HotIf
+; Hotkeys come from dictate.ini (AutoHotkey notation: ^ Ctrl, + Shift, ! Alt, # Win).
+; The cancel key is registered only while a recording is running (Recording = true);
+; outside of that window it does not exist and reaches the app as usual.
+try {
+    Hotkey HotkeyToggle, (*) => ToggleDictation()
+    HotIf (*) => Recording
+    Hotkey HotkeyCancel, (*) => CancelDictation()
+    HotIf
+} catch as e {
+    MsgBox "Bad hotkey in dictate.ini: " e.Message, "claude-dictate", "Iconx"
+    ExitApp
+}
 
 ; ---- tray menu ----------------------------------------------------
 

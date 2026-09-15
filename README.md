@@ -59,8 +59,9 @@ console window mode (hidden, minimized, visible), `Autostart` (check mark = shor
 
 ## Settings
 
-Everything is in `dictate.ini`, every key has a comment: path to `claude.exe`, window mode,
-indicator position and opacity, countdown limits, profiles. On first run the file is created
+Everything is in `dictate.ini`, every key has a comment: hotkeys (AutoHotkey notation,
+e.g. `^Space`, `^!d`, `#v`), path to `claude.exe`, window mode, indicator position and
+opacity, countdown limits, profiles. On first run the file is created
 from `dictate.example.ini`. After editing, `Reload` from the menu.
 
 Recognition language: `dictate-settings.json`, key `language` (default `ru`; see the
