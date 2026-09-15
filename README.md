@@ -90,18 +90,8 @@ its own `.credentials.json`. The launcher walks this chain and takes the first m
 
 1. Command-line argument: a config directory or `default`. This is how the core restarts
    itself when you switch profiles from the menu or press `Reload`.
-2. The file named by the `current` key, if it points at a live process:
-
-   ```ini
-   [OpenChamber]
-   configDir=C:\path\to\profile
-   pid=12345
-   ```
-
-   While the process with that `pid` is alive, its `configDir` is used. The OpenChamber
-   launcher writes such a file, for example, so dictation runs under the same account.
-3. The `last` key: the profile used last time. Written automatically.
-4. The first subfolder (alphabetically) that has a `.credentials.json`.
+2. The `last` key: the profile used last time. Written automatically.
+3. The first subfolder (alphabetically) that has a `.credentials.json`.
 
 The chosen profile is written to `last` and passed to the core. All profiles from the
 folder are listed in the menu; click to switch.
