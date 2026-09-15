@@ -22,8 +22,8 @@ A small AutoHotkey utility, no build, no dependencies.
 ## Getting started
 
 1. Copy the folder anywhere.
-2. Double-click `dictate-start.ahk`. On the first run it asks for the folder with your
-   Claude profiles; press Cancel if you use a single account. Then a console with
+2. Double-click `dictate-start.ahk`. On the first run it asks for the folder of the Claude
+   profile to dictate with; press Cancel to use the default one. Then a console with
    Claude Code opens, a small `○ ready` indicator appears in a screen corner, a green
    "H" icon in the tray.
 3. The first time, Claude Code asks in that console whether to trust this folder:
@@ -83,22 +83,24 @@ Recognition language: `dictate-settings.json`, key `language` (default `ru`; see
 
 ## How the profile is chosen
 
-A profile is a Claude Code config directory (`CLAUDE_CONFIG_DIR`) with its own login.
+A profile is a Claude Code config directory (`CLAUDE_CONFIG_DIR`) with its own login,
+recognizable by a `.credentials.json` inside. `default` is Claude Code's own `~\.claude`.
 
-**One account, the usual case.** The `dir` key in `[profiles]` of `dictate.ini` is empty.
-The launcher starts the core with `default` right away, the core leaves `CLAUDE_CONFIG_DIR`
-alone, Claude Code uses its usual `~\.claude`. The menu shows a single `Profile: default`.
+**One account, the usual case.** Press Cancel in the first-run dialog. The launcher starts
+the core with `default`, the core leaves `CLAUDE_CONFIG_DIR` alone, Claude Code uses
+`~\.claude`. The menu shows `Profile: default`.
 
-**Several accounts.** `[profiles]` names a folder with one subfolder per account, each with
-its own `.credentials.json`. The launcher walks this chain and takes the first match:
+**Several accounts.** Pick the profile folder in the first-run dialog. It becomes `last`
+in `dictate.ini`, its parent folder becomes `dir`, and every sibling folder with a
+`.credentials.json` shows up in the tray menu. With `dir` empty the parent is your user
+folder, which covers the usual `~\.claude-work`, `~\.claude-personal` layout.
+
+On every start the launcher takes the first that applies:
 
 1. Command-line argument: a config directory or `default`. This is how the core restarts
    itself when you switch profiles from the menu or press `Reload`.
 2. The `last` key: the profile used last time. Written automatically.
-3. The first subfolder (alphabetically) that has a `.credentials.json`.
-
-The chosen profile is written to `last` and passed to the core. All profiles from the
-folder are listed in the menu; click to switch.
+3. `default`.
 
 ## How it works
 

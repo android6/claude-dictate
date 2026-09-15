@@ -156,13 +156,18 @@ ProfileName() {
     return name
 }
 
-; name -> config dir. Always includes the running one, so the menu can show it.
+; name -> config dir: "default" plus every subfolder of [profiles] dir (the
+; user's home folder unless set) that holds a .credentials.json, e.g. .claude-work.
+; Always includes the running one, so the menu can show it.
 ProfileList() {
     list := Map()
+    list["default"] := ""
     dir := IniRead(StateIni, "profiles", "dir", "")
-    if (dir != "" && DirExist(dir)) {
+    if (dir = "")
+        dir := EnvGet("USERPROFILE")
+    if DirExist(dir) {
         Loop Files dir "\*", "D"
-            if FileExist(A_LoopFileFullPath "\.credentials.json")
+            if (FileExist(A_LoopFileFullPath "\.credentials.json") && A_LoopFileFullPath != EnvGet("USERPROFILE") "\.claude")
                 list[A_LoopFileName] := A_LoopFileFullPath
     }
     list[ProfileName()] := ConfigDir

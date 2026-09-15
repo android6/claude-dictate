@@ -3,25 +3,22 @@
 
 ; ------------------------------------------------------------------
 ; THE file to run. Picks the Claude profile, then starts dictate-core.ahk.
-;   [profiles] dir empty in dictate.ini  -> core with Claude's default config
-;   an explicit argument (config dir or "default"; the core's tray menu uses
-;   it to switch profiles and to reload)    -> that one
-;   [profiles] last=... (written here on every start)  -> that one
-;   otherwise -> the first profile found in [profiles] dir=... (a subfolder
-;   with .credentials.json); switch from the core's tray menu
+;
+; A profile is a Claude config directory (CLAUDE_CONFIG_DIR) holding a
+; .credentials.json. "default" means Claude Code's own ~\.claude.
+;
+;   first run  -> dictate.ini is created from dictate.example.ini and a folder
+;                 dialog asks for the profile to dictate with (Cancel = default);
+;                 its parent folder is remembered as [profiles] dir, so sibling
+;                 profiles show up in the core's tray menu
+;   argument   -> a config dir or "default" (the tray menu uses this to switch
+;                 profiles and to reload)
+;   otherwise  -> [profiles] last, i.e. the profile used last time, else default
 ; ------------------------------------------------------------------
 
-Ini         := A_ScriptDir "\dictate.ini"
-FirstRun    := !FileExist(Ini)
-if FirstRun {                            ; first run: start from the example
-    FileCopy A_ScriptDir "\dictate.example.ini", Ini
-    ; Ask once where the Claude profiles live; Cancel = one account, default config.
-    dir := DirSelect("*" A_MyDocuments "\..", 2, "claude-dictate: folder with your Claude profiles (one subfolder per account).`nCancel if you use a single account.")
-    if (dir != "")
-        IniWrite dir, Ini, "profiles", "dir"
-}
-ProfilesDir := IniRead(Ini, "profiles", "dir", "")
-Dictate     := A_ScriptDir "\dictate-core.ahk"
+Ini      := A_ScriptDir "\dictate.ini"
+Dictate  := A_ScriptDir "\dictate-core.ahk"
+FirstRun := !FileExist(Ini)
 
 ; On the first run the core keeps the Claude Code console visible, because
 ; Claude Code asks about trusting the folder (and maybe about logging in).
@@ -30,43 +27,31 @@ StartCore(configDir) {
     ExitApp
 }
 
-; No profiles configured: plain Claude Code with its default config.
-if (ProfilesDir = "")
+if FirstRun {
+    FileCopy A_ScriptDir "\dictate.example.ini", Ini
+    chosen := DirSelect("*" EnvGet("USERPROFILE"), 2,
+        "claude-dictate: select the folder of the Claude profile to dictate with"
+        . " (it contains .credentials.json).`nCancel = use the default profile.")
+    if (chosen != "" && !FileExist(chosen "\.credentials.json")) {
+        MsgBox "No .credentials.json in " chosen "`nUsing the default profile instead.", "claude-dictate", "Iconi"
+        chosen := ""
+    }
+    if (chosen != "") {
+        SplitPath chosen, , &parent
+        IniWrite parent, Ini, "profiles", "dir"
+        IniWrite chosen, Ini, "profiles", "last"
+        StartCore(chosen)
+    }
     StartCore("default")
-if !DirExist(ProfilesDir) {
-    MsgBox "[profiles] dir in dictate.ini does not exist: " ProfilesDir, "claude-dictate", "Iconx"
-    ExitApp
 }
 
-; Optional argument: a config dir, or "default", chosen from the core's tray menu.
-configDir := ""
+; Explicit argument from the tray menu.
 if (A_Args.Length >= 1) {
-    if (A_Args[1] = "default")
-        StartCore("default")
-    configDir := A_Args[1]
+    if (A_Args[1] != "default")
+        IniWrite A_Args[1], Ini, "profiles", "last"
+    StartCore(A_Args[1])
 }
 
-; 1. the profile used last time
-if (configDir = "") {
-    last := IniRead(Ini, "profiles", "last", "")
-    if (last != "" && DirExist(last))
-        configDir := last
-}
-; 2. the first logged-in profile found (switch any time from the tray menu)
-if (configDir = "") {
-    Loop Files ProfilesDir "\*", "D"
-        if (configDir = "" && FileExist(A_LoopFileFullPath "\.credentials.json"))
-            configDir := A_LoopFileFullPath
-}
-if (configDir = "") {
-    MsgBox "No logged-in Claude profiles found in " ProfilesDir, "claude-dictate", "Iconx"
-    ExitApp
-}
-
-if !DirExist(configDir) {
-    MsgBox "Profile directory not found: " configDir, "claude-dictate", "Iconx"
-    ExitApp
-}
-
-IniWrite configDir, Ini, "profiles", "last"
-StartCore(configDir)
+; The profile used last time, else default.
+last := IniRead(Ini, "profiles", "last", "")
+StartCore((last != "" && DirExist(last)) ? last : "default")
